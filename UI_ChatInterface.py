@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import NLP
-import DataBases
+import DataBase
 import ComplianceSecurity
 import Main
 
@@ -44,7 +44,7 @@ def show_login():
             login_win.destroy()
             show_chat_interface()
         else:
-            messagebox.showerror("Unathorized", "Invalid credentials or insufficient permissions.")
+            messagebox.showerror("Unauthorized", "Invalid credentials or insufficient permissions.")
     tk.Button(login_win, text="Login", command=attempt_login).pack(pady=20)
 
 def show_chat_interface():
@@ -87,3 +87,24 @@ def append_message(widget, message):
     widget.insert(tk.END, message + "")
     widget.config(state=tk.DISABLED)
     widget.see(tk.END)
+
+def handle_message(input_field, chat_history):
+    user_msg = input_field.get().strip()
+    if not user_msg:
+        return
+    append_message(chat_history,f"Bot: You {user_msg}!")
+    DataBase.log_activity(current_user, user_msg)
+
+    # Check complaince rules against search action
+    if not ComplianceSecurity.is_authorized(current_user, "search"):
+        bot_resp = "You do not have permission to perform this search."
+    else:
+        # Parse and query
+        filters = NLP.parse_query(user_msg)
+        results = DataBase.query_books(filters)
+        bot_resp = "Here are some results:"+" "+" ".join(
+            [f"- {r[0]} ({r[1]}, {r[2]})" for r in results[:5]]
+        ) if results else "Sorry, I couldn't find any matching items."
+
+        append_message(chat_history,f"Bot: {bot_resp}")
+        DataBase.log_activity(current_user, bot_resp)

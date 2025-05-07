@@ -47,3 +47,43 @@ def show_login():
             messagebox.showerror("Unathorized", "Invalid credentials or insufficient permissions.")
     tk.Button(login_win, text="Login", command=attempt_login).pack(pady=20)
 
+def show_chat_interface():
+    """Build the main chat interface upon successful login."""
+    chat_win = tk.Tk()
+    chat_win.title(f"Chat - {current_user}")
+    # Set initial window size
+    chat_win.geometry("500x600")
+    # Allow user to resize window
+    chat_win.resizable(True, True)
+    # Prevent user from shrinking window smaller than initial login screen
+    chat_win.minsize(300, 200)
+
+    # Chat history
+    frame = tk.Frame(chat_win)
+    frame.pack(expand=True, fill=tk.BOTH)
+    scrollbar = tk.Scrollbar(frame)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+    chat_history = tk.Text(frame, wrap = tk.WORD,yscrollcommand=scrollbar.set,state=tk.DISABLED)
+    chat_history.pack(expand=True, fill=tk.BOTH)
+    scrollbar.config(command=chat_history.yview)
+
+    # Input frame
+    input_frame = tk.Frame(chat_win)
+    input_frame.pack(fill=tk.X)
+    input_field = tk.Entry(input_frame)
+    input_field.pack(side=tk.LEFT,expand=True,fill=tk.X,padx=-5,pady=5)
+    input_field.focus()
+    send_btn = tk.Button(input_frame, text="Send", command=lambda: handle_message(input_field,chat_history))
+    send_btn.pack(side=tk.RIGHT, padx=5, pady=5)
+
+    # Bind Enter Key
+    input_field.bind("<Return>", lambda event: handle_message(input_field,chat_history))
+
+    # Show welcome prompt
+    append_message(chat_history,f"Bot: Welcome {current_user}! How can I assist you today?")
+
+def append_message(widget, message):
+    widget.config(state=tk.NORMAL)
+    widget.insert(tk.END, message + "")
+    widget.config(state=tk.DISABLED)
+    widget.see(tk.END)

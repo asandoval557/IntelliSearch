@@ -7,6 +7,8 @@ import ComplianceSecurity
 def main():
     # Initialize database connection
     DataBase.init_db()
+    # Initialize NLP module
+    NLP.init_nlp()
     # Initialize compliance module
     ComplianceSecurity.init()
     # Launch chat interface (blocks until exit)

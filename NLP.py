@@ -4,7 +4,13 @@ nlp = None
 
 def init_nlp(model_name: str = "en_core_web_sm"):
     global nlp
-    nlp = spacy.load(model_name)
+    try:
+        nlp = spacy.load(model_name)
+    except OSError:
+        # Model not found, download and load
+        from spacy.cli import download
+        download(model_name)
+        nlp = spacy.load(model_name)
 
 def parse_query(text: str) -> dict:
     """

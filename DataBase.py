@@ -14,12 +14,28 @@ def init_db():
         message TEXT,
         timestamp TEXT)"""
     )
+    # Auth table for local user credentials
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS user_auth (
+            username TEXT PRIMARY KEY,
+            password_hash TEXT NOT NULL,
+            salt TEXT NOT NULL,
+            role TEXT)"""
+    )
     conn.commit()
     conn.close()
 
-def log_activity(user:str, message:str):
+def log_activity(user:str, message:str, timestamp:str = None):
     # insert new activity record
-    pass
+    timestamp = timestamp or __import__('datetime').datetime.now().isoformat()
+    conn = sqlite3.connect(ACTIVITY_DB)
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO user_activity (user_name, message, timestamp)'
+                   (user, message, timestamp)
+    )
+    conn.commit()
+    conn.close()
 
 # Temp function build out based on actual database
 def query_books(filters:dict )->list:

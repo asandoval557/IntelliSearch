@@ -34,7 +34,7 @@ def log_activity(user:str, message:str, timestamp:str = None):
     timestamp = timestamp or __import__('datetime').datetime.now().isoformat()
     conn = sqlite3.connect(ACTIVITY_DB)
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO user_activity (user_name, message, timestamp) VALUES (?, ?, ?)'
+    cursor.execute('INSERT INTO user_activity (user_name, message, timestamp) VALUES (?, ?, ?)',
                    (user, message, timestamp)
     )
     conn.commit()

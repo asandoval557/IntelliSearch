@@ -32,6 +32,10 @@ def show_login():
     password_entry = tk.Entry(login_win, show="*")
     password_entry.pack(pady=5)
 
+    # Frame for buttons
+    btn_frame = tk.Frame(login_win)
+    btn_frame.pack(pady=15)
+
     # Login button
     def attempt_login():
         user = username_entry.get().strip()
@@ -46,7 +50,9 @@ def show_login():
             show_chat_interface()
         else:
             messagebox.showerror("Unauthorized", "Invalid credentials or insufficient permissions.")
-    tk.Button(login_win, text="Login", command=attempt_login).pack(pady=20)
+
+    login_btn = tk.Button(btn_frame, text="Login", command=attempt_login)
+    login_btn.pack(side=tk.RIGHT, padx=10)
 
     # Register button
     def show_register():
@@ -88,7 +94,8 @@ def show_login():
 
         tk.Button(register_win, text="Register", command=attempt_register).pack(pady=20)
 
-    tk.Button(login_win, text="Register", command=show_register).pack(pady=(0, 10))
+    register_btn = tk.Button(btn_frame, text="Register", command=show_register)
+    register_btn.pack(side=tk.LEFT, padx=10)
 
 def show_chat_interface():
     """Build the main chat interface upon successful login."""

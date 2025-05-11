@@ -57,6 +57,25 @@ def create_user(username: str, password: str, role: str = None) ->bool:
     finally:
         conn.close()
 
+def verify_user(username: str, password: str) -> bool:
+    """Verify provided password against stored hash and salt"""
+    conn = sqlite3.connect(ACTIVITY_DB)
+    cursor = conn.cursor()
+    cursor.execute(
+        'SELECT password_hash, salt FROM user_auth WHERE username = ?',
+        (username,)
+    )
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        return False
+    stored_hash, salt = row
+    # Recreate the hash with the same salt and compare
+    pwd_hash = hashlib.pbkdf2_hmac(
+        'sha256', password.encode(), salt.encode(), 100000
+    ).hex()
+    return pwd_hash == stored_hash
+
 # Temp function build out based on actual database
 def query_books(filters:dict )->list:
     # Build and execute SQL query on DEMO_DB based on filters

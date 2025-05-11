@@ -32,6 +32,7 @@ def show_login():
     password_entry = tk.Entry(login_win, show="*")
     password_entry.pack(pady=5)
 
+    # Login button
     def attempt_login():
         user = username_entry.get().strip()
         password = password_entry.get().strip()
@@ -46,6 +47,48 @@ def show_login():
         else:
             messagebox.showerror("Unauthorized", "Invalid credentials or insufficient permissions.")
     tk.Button(login_win, text="Login", command=attempt_login).pack(pady=20)
+
+    # Register button
+    def show_register():
+        register_win = tk.Toplevel()
+        register_win.title("Register New User")
+        register_win.geometry("300x300")
+        register_win.resizable(True, True)
+        register_win.minsize(300, 300)
+
+        tk.Label(register_win, text="New Username:").pack(pady=(20, 5))
+        new_user_entry = tk.Entry(register_win)
+        new_user_entry.pack(pady=5)
+
+        tk.Label(register_win, text="New Password:").pack(pady=5)
+        new_pass_entry = tk.Entry(register_win, show="*")
+        new_pass_entry.pack(pady=5)
+
+        tk.Label(register_win, text="Confirm Password:").pack(pady=5)
+        confirm_pass_entry = tk.Entry(register_win, show="*")
+        confirm_pass_entry.pack(pady=5)
+
+        def attempt_register():
+            new_user = new_user_entry.get().strip()
+            new_pass = new_pass_entry.get().strip()
+            confirm = confirm_pass_entry.get().strip()
+            if not new_user or not new_pass or not confirm:
+                messagebox.showerror("Registration Failed", "All fields are required.")
+                return
+            if new_pass != confirm:
+                messagebox.showerror("Registration Failed", "Passwords do not match.")
+                return
+            # Call ComplianceSecurity to register user
+            success = ComplianceSecurity.register_user(new_user, new_pass)
+            if success:
+                messagebox.showinfo("Registration Successful", "You can now log in with your new credentials.")
+                register_win.destroy()
+            else:
+                messagebox.showerror("Registration Failed", "Username may already exist.")
+
+        tk.Button(register_win, text="Register", command=attempt_register).pack(pady=20)
+
+    tk.Button(login_win, text="Register", command=show_register).pack(pady=(0, 10))
 
 def show_chat_interface():
     """Build the main chat interface upon successful login."""

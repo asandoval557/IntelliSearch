@@ -2,6 +2,7 @@ import sqlite3
 import hashlib
 import secrets
 
+
 ACTIVITY_DB = 'user_activity.db'
 DEMO_DB = 'demo.db' #temp database
 
@@ -33,7 +34,7 @@ def log_activity(user:str, message:str, timestamp:str = None):
     timestamp = timestamp or __import__('datetime').datetime.now().isoformat()
     conn = sqlite3.connect(ACTIVITY_DB)
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO user_activity (user_name, message, timestamp)'
+    cursor.execute('INSERT INTO user_activity (user_name, message, timestamp) VALUES (?, ?, ?)'
                    (user, message, timestamp)
     )
     conn.commit()

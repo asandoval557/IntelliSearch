@@ -3,7 +3,7 @@ from tkinter import messagebox
 import NLP
 import DataBase
 import ComplianceSecurity
-import Main
+
 
 # Global context
 currentUser = None
@@ -43,7 +43,7 @@ def show_login():
         if not user or not password:
             messagebox.showerror("Login Failed", "Please enter both username and password.")
             return
-        if ComplianceSecurity.is_authorized (user, "login"):
+        if ComplianceSecurity.is_authorized (user, "login", password):
             global current_user
             current_user = user
             login_win.destroy()
@@ -51,8 +51,8 @@ def show_login():
         else:
             messagebox.showerror("Unauthorized", "Invalid credentials or insufficient permissions.")
 
-    login_btn = tk.Button(btn_frame, text="Login", command=attempt_login)
-    login_btn.pack(side=tk.RIGHT, padx=10)
+    login_btn = tk.Button(btn_frame, text="Login", width=10, command=attempt_login)
+    login_btn.pack(side=tk.LEFT, padx=5)
 
     # Register button
     def show_register():
@@ -94,8 +94,8 @@ def show_login():
 
         tk.Button(register_win, text="Register", command=attempt_register).pack(pady=20)
 
-    register_btn = tk.Button(btn_frame, text="Register", command=show_register)
-    register_btn.pack(side=tk.LEFT, padx=10)
+    register_btn = tk.Button(btn_frame, text="Register", width=10, command=show_register)
+    register_btn.pack(side=tk.LEFT, padx=5)
 
 def show_chat_interface():
     """Build the main chat interface upon successful login."""

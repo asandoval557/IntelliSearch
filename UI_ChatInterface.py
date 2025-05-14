@@ -1,5 +1,6 @@
 import tkinter as tk
-from tkinter import messagebox
+from pickle import FALSE
+from tkinter import messagebox, ttk
 import NLP
 import DataBase
 import ComplianceSecurity
@@ -24,16 +25,27 @@ def show_login():
     # prevent the user from shrinking the window beyond the initial window size
     login_win.minsize(300, 200)
 
-    tk.Label(login_win, text="Username:").pack(pady=(20,5))
-    username_entry = tk.Entry(login_win)
-    username_entry.pack(pady=5)
+    # Apply modern styling
+    style = ttk.Style()
+    style.configure('TButton', font=("Arial", 10), background = '#7349cc')
+    style.configure('TLabel', font=("Arial", 10))
+    style.configure('TEntry', font=("Arial", 10))
 
-    tk.Label(login_win, text="Password:").pack(pady=5)
-    password_entry = tk.Entry(login_win, show="*")
-    password_entry.pack(pady=5)
+    # Center the form with padding
+    main_frame = ttk.Frame(login_win, padding = 20)
+    main_frame.pack(expand=True, fill=tk.BOTH)
+
+    tk.Label(main_frame, text="Username:").pack(pady=(10,5), anchor='w')
+    username_entry = tk.Entry(main_frame, width=30)
+    username_entry.pack(pady=5, fill=tk.X)
+
+    tk.Label(main_frame, text="Password:").pack(pady=5, anchor='w')
+    password_entry = tk.Entry(main_frame, show="*", width=30)
+    password_entry.pack(pady=5, fill=tk.X)
+
 
     # Frame for buttons
-    btn_frame = tk.Frame(login_win)
+    btn_frame = tk.Frame(main_frame)
     btn_frame.pack(pady=(10,5))
 
     # Login button
@@ -51,7 +63,7 @@ def show_login():
         else:
             messagebox.showerror("Unauthorized", "Invalid credentials or insufficient permissions.")
 
-    login_btn = tk.Button(btn_frame, text="Login", width=10, command=attempt_login)
+    login_btn = tk.Button(btn_frame, text="Login", command=attempt_login, width=15)
     login_btn.pack(side=tk.LEFT, padx=5)
 
     # Register button
@@ -62,17 +74,20 @@ def show_login():
         register_win.resizable(True, True)
         register_win.minsize(300, 300)
 
-        tk.Label(register_win, text="New Username:").pack(pady=(20, 5))
-        new_user_entry = tk.Entry(register_win)
-        new_user_entry.pack(pady=5)
+        reg_frame = ttk.Frame(register_win, padding = 20)
+        reg_frame.pack(expand=True, fill=tk.BOTH)
 
-        tk.Label(register_win, text="New Password:").pack(pady=5)
-        new_pass_entry = tk.Entry(register_win, show="*")
-        new_pass_entry.pack(pady=5)
+        tk.Label(reg_frame, text="New Username:").pack(pady=(10, 5), anchor='w')
+        new_user_entry = tk.Entry(reg_frame, width=30)
+        new_user_entry.pack(pady=5, fill=tk.X)
 
-        tk.Label(register_win, text="Confirm Password:").pack(pady=5)
-        confirm_pass_entry = tk.Entry(register_win, show="*")
-        confirm_pass_entry.pack(pady=5)
+        tk.Label(reg_frame, text="New Password:").pack(pady=5, anchor='w')
+        new_pass_entry = tk.Entry(reg_frame, show="*")
+        new_pass_entry.pack(pady=5,fill=tk.X)
+
+        tk.Label(reg_frame, text="Confirm Password:").pack(pady=5, anchor='w')
+        confirm_pass_entry = tk.Entry(reg_frame, show="*")
+        confirm_pass_entry.pack(pady=5, fill=tk.X)
 
         def attempt_register():
             new_user = new_user_entry.get().strip()
@@ -92,9 +107,9 @@ def show_login():
             else:
                 messagebox.showerror("Registration Failed", "Username may already exist.")
 
-        tk.Button(register_win, text="Register", command=attempt_register).pack(pady=20)
+        tk.Button(reg_frame, text="Register", command=attempt_register, width=15).pack(pady=20)
 
-    register_btn = tk.Button(btn_frame, text="Register", width=10, command=show_register)
+    register_btn = tk.Button(btn_frame, text="Register", command=show_register, width=10)
     register_btn.pack(side=tk.LEFT, padx=5)
 
 def show_chat_interface():
@@ -107,6 +122,14 @@ def show_chat_interface():
     chat_win.resizable(True, True)
     # Prevent user from shrinking window smaller than initial login screen
     chat_win.minsize(300, 200)
+    chat_win.configure(bg='#f0f0f5')
+
+    header_frame = tk.Frame(chat_win, bg="#7349cc", height=50)
+    header_frame.pack(fill = tk.X)
+    header_frame.pack_propagate(False)
+
+    title_label = tk.Frame(header_frame, bg="#7349cc")
+    title_label.pack(expand=True)
 
     # Chat history
     frame = tk.Frame(chat_win)

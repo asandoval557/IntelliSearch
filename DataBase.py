@@ -1,51 +1,85 @@
 import sqlite3
 import hashlib
 import secrets
+from datetime import datetime
 
+# Database file paths
+activity_db = 'user_activity.db'
+auth_db = 'user_auth.db'
+demo_db = 'demo_books.db'
 
-ACTIVITY_DB = 'user_activity.db'
-DEMO_DB = 'demo.db' #temp database
 
 def init_db():
-    conn = sqlite3.connect(ACTIVITY_DB)
+    """Initialize all required databases and tables."""
+    # 1) Activity DB
+    conn = sqlite3.connect(activity_db)
     cursor = conn.cursor()
     cursor.execute(
-    """
-    CREATE TABLE IF NOT EXISTS user_activity (
-        id INTEGER PRIMARY KEY,
-        user_name TEXT,
-        message TEXT,
-        timestamp TEXT)"""
+        '''
+        CREATE TABLE IF NOT EXISTS user_activity (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            message TEXT NOT NULL,
+            timestamp TEXT NOT NULL
+        );
+        '''
     )
-    # Auth table for local user credentials
+    conn.commit()
+    conn.close()
+
+    # 2) Auth DB
+    conn = sqlite3.connect(auth_db)
+    cursor = conn.cursor()
     cursor.execute(
-        """
+        '''
         CREATE TABLE IF NOT EXISTS user_auth (
             username TEXT PRIMARY KEY,
             password_hash TEXT NOT NULL,
             salt TEXT NOT NULL,
-            role TEXT)"""
+            role TEXT
+        );
+        '''
     )
     conn.commit()
     conn.close()
 
-def log_activity(user:str, message:str, timestamp:str = None):
-    # insert new activity record
-    timestamp = timestamp or __import__('datetime').datetime.now().isoformat()
-    conn = sqlite3.connect(ACTIVITY_DB)
+    # 3) Demo DB
+    conn = sqlite3.connect(demo_db)
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO user_activity (user_name, message, timestamp) VALUES (?, ?, ?)',
-                   (user, message, timestamp)
+    cursor.execute(
+        '''
+        CREATE TABLE IF NOT EXISTS books (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            genre TEXT NOT NULL,
+            publication_year INTEGER NOT NULL
+        );
+        '''
     )
     conn.commit()
     conn.close()
 
-def create_user(username: str, password: str, role: str = None) ->bool:
-    """Register new user with hashed password and random salt."""
+def log_activity(username: str, message: str, timestamp: str = None):
+    """Log a user interaction in the activity database."""
+    ts = timestamp or datetime.now().isoformat()
+    conn = sqlite3.connect(activity_db)
+    cursor = conn.cursor()
+    cursor.execute(
+        'INSERT INTO user_activity (username, message, timestamp) VALUES (?, ?, ?)',
+        (username, message, ts)
+    )
+    conn.commit()
+    conn.close()
+
+
+def create_user(username: str, password: str, role: str = None) -> bool:
+    """Register a new user in the auth database. Returns False if username exists."""
     salt = secrets.token_hex(16)
-    pwd_hash = hashlib.pbkdf2_hmac('sha256'. password.encode(),salt.encode(),10000).hex()
+    pwd_hash = hashlib.pbkdf2_hmac(
+        'sha256', password.encode(), salt.encode(), 100000
+    ).hex()
     try:
-        conn = sqlite3.connect(ACTIVITY_DB)
+        conn = sqlite3.connect(auth_db)
         cursor = conn.cursor()
         cursor.execute(
             'INSERT INTO user_auth (username, password_hash, salt, role) VALUES (?, ?, ?, ?)',
@@ -54,13 +88,15 @@ def create_user(username: str, password: str, role: str = None) ->bool:
         conn.commit()
         return True
     except sqlite3.IntegrityError:
+        # Username already exists
         return False
     finally:
         conn.close()
 
+
 def verify_user(username: str, password: str) -> bool:
-    """Verify provided password against stored hash and salt"""
-    conn = sqlite3.connect(ACTIVITY_DB)
+    """Verify a user's password against the stored hash in the auth database."""
+    conn = sqlite3.connect(auth_db)
     cursor = conn.cursor()
     cursor.execute(
         'SELECT password_hash, salt FROM user_auth WHERE username = ?',
@@ -71,13 +107,19 @@ def verify_user(username: str, password: str) -> bool:
     if not row:
         return False
     stored_hash, salt = row
-    # Recreate the hash with the same salt and compare
     pwd_hash = hashlib.pbkdf2_hmac(
         'sha256', password.encode(), salt.encode(), 100000
     ).hex()
     return pwd_hash == stored_hash
 
-# Temp function build out based on actual database
-def query_books(filters:dict )->list:
-    # Build and execute SQL query on DEMO_DB based on filters
-    pass
+
+def query_books(filters: dict) -> list:
+    """Retrieve books from demo database based on provided filters dict."""
+    # TODO: Build SQL from filters (genre, years, etc.) and return results
+    conn = sqlite3.connect(demo_db)
+    cursor = conn.cursor()
+    # simple fallback all rows
+    cursor.execute('SELECT title, genre, publication_year FROM books')
+    results = cursor.fetchall()
+    conn.close()
+    return results

@@ -34,7 +34,7 @@ def show_login():
 
     # Frame for buttons
     btn_frame = tk.Frame(login_win)
-    btn_frame.pack(pady=15)
+    btn_frame.pack(pady=(10,5))
 
     # Login button
     def attempt_login():

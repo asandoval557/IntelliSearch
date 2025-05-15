@@ -150,7 +150,7 @@ def show_chat_interface():
 
     #Create the frame inside the canvas to hold messages
     messages_frame = tk.Frame(chat_canvas, bg="#f0f0f5")
-    chat_canvas.create_window((0, 0),window= messages_frame, anchor=tk.NW, tags="messages_frame")
+    chat_canvas.create_window((0, 0),window= messages_frame, anchor='nw', tags="messages_frame")
 
     def configure_messages_frame(event):
         chat_canvas.configure(scrollregion=chat_canvas.bbox("all"))
@@ -162,7 +162,33 @@ def show_chat_interface():
     input_frame = tk.Frame(chat_win, bg='white', height=60)
     input_frame.pack(fill=tk.X, side = tk.BOTTOM, padx=10, pady=10)
 
-    #
+    # Text input area with rounded corners
+    entry_frame = tk.Frame(input_frame, bg='white', bd=1, relief=tk.SOLID)
+    entry_frame.pack(side=tk.LEFT,fill=tk.X, expand=True, padx=(0,10))
+
+    input_field = tk.ENTRY(entry_frame, bd=0, font=('Arial',10), bg='white')
+    input_field.pack(fill=tk.X, expand=True, ipady=8, padx=10)
+    input_field.insert(0, "Type your message...")
+
+    # Clear the placeholder text
+    def clear_placeholder(event):
+        if input_field.get() == "Type your message...":
+            input_field.delete(0, tk.END)
+
+    # Add placeholder text if empty
+    def add_placeholder(event):
+        if input_field.get() == "":
+            input_field.insert(tk.END, "Type your message...")
+
+    input_field.bind("<FocusIn>", clear_placeholder)
+    input_field.bind("<FocusOut>", add_placeholder)
+
+    # Send Button with modern styling
+    send_btn = tk.Button(input_frame, text="Send", font=('Arial', 10, 'bold'), bg='#7349cc', fg='white', padx= 15,
+                         pady= 8 , activebackground='#5c3ba6', activeforeground='white', command=lambda: handle_message(
+                        input_field, messages_frame))
+    send_btn.pack(side=tk.RIGHT)
+
 
 
 def append_message(widget, message):

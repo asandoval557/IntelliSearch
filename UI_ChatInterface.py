@@ -135,29 +135,35 @@ def show_chat_interface():
     chat_frame = tk.Frame(chat_win, bg="#f0f0f5")
     chat_frame.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
 
-    # Chat history
-    frame = tk.Frame(chat_win)
-    frame.pack(expand=True, fill=tk.BOTH)
-    scrollbar = tk.Scrollbar(frame)
+    # Chat history with modern styling
+    history_frame = tk.Frame(chat_frame, bg="#f0f0f5")
+    history_frame.pack(expand=True, fill=tk.BOTH)
+
+    # Creating a canvas with scrollbar for smooth scrolling
+    chat_canvas = tk.Canvas(history_frame, bg="#f0f0f5", highlightthickness=0)
+    scrollbar = ttk.Scrollbar(history_frame, orient=tk.VERTICAL, command=chat_canvas.yview)
+
+    # Configure the canvas
+    chat_canvas.configure(yscrollcommand=scrollbar.set)
+    chat_canvas.pack(side = tk.LEFT, fill = tk.BOTH, expand=True)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-    chat_history = tk.Text(frame, wrap = tk.WORD,yscrollcommand=scrollbar.set,state=tk.DISABLED)
-    chat_history.pack(expand=True, fill=tk.BOTH)
-    scrollbar.config(command=chat_history.yview)
 
-    # Input frame
-    input_frame = tk.Frame(chat_win)
-    input_frame.pack(fill=tk.X)
-    input_field = tk.Entry(input_frame)
-    input_field.pack(side=tk.LEFT,expand=True,fill=tk.X,padx=-5,pady=5)
-    input_field.focus()
-    send_btn = tk.Button(input_frame, text="Send", command=lambda: handle_message(input_field,chat_history))
-    send_btn.pack(side=tk.RIGHT, padx=5, pady=5)
+    #Create the frame inside the canvas to hold messages
+    messages_frame = tk.Frame(chat_canvas, bg="#f0f0f5")
+    chat_canvas.create_window((0, 0),window= messages_frame, anchor=tk.NW, tags="messages_frame")
 
-    # Bind Enter Key
-    input_field.bind("<Return>", lambda event: handle_message(input_field,chat_history))
+    def configure_messages_frame(event):
+        chat_canvas.configure(scrollregion=chat_canvas.bbox("all"))
+        chat_canvas.itemconfig("messages_frame", width=chat_canvas.winfo_width())
 
-    # Show welcome prompt
-    append_message(chat_history,f"Bot: Welcome {current_user}! How can I assist you today?")
+    messages_frame.bind("<Configure>", configure_messages_frame)
+
+    # Bottom user input area
+    input_frame = tk.Frame(chat_win, bg='white', height=60)
+    input_frame.pack(fill=tk.X, side = tk.BOTTOM, padx=10, pady=10)
+
+    #
+
 
 def append_message(widget, message):
     widget.config(state=tk.NORMAL)

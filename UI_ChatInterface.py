@@ -189,31 +189,71 @@ def show_chat_interface():
                         input_field, messages_frame))
     send_btn.pack(side=tk.RIGHT)
 
+    # Bind Enter Key
+    input_field.bind("<Return>", lambda event: handle_message(input_field, messages_frame))
+
+    # Display welcome message
+    add_bot_message(messages_frame, f"Hello! How can I help you?")
+
+    #Focus on input field
+    input_field.focus_set()
+
+def add_bot_message(container, message):
+    """Add a message from the bot to the chat"""
+    msg_frame = tk.Frame(container, bg="#f0f0f5")
+    msg_frame.pack(fill=tk.X, pady=10)
+
+    msg_bubble = tk.Label(msg_frame, text=message, wraplength=250, bg="#e6e6f0", fg='white', padx=12, pady=8,
+                          relief=tk.FLAT, anchor='w')
+    msg_bubble.pack(side=tk.LEFT, padx=10)
+
+def add_user_message(container, message):
+    """Add a message from the user to the chat"""
+    msg_frame = tk.Frame(container, bg="#f0f0f5")
+    msg_frame.pack(fill=tk.X, pady=5)
+
+    msg_bubble = tk.Label(msg_frame, text= message, wraplength=250, justify=tk.RIGHT, bg='#7349cc',
+                          fg='white', padx=12, pady=8, relief=tk.FLAT, anchor='e')
 
 
-def append_message(widget, message):
-    widget.config(state=tk.NORMAL)
-    widget.insert(tk.END, message + "")
-    widget.config(state=tk.DISABLED)
-    widget.see(tk.END)
-
-def handle_message(input_field, chat_history):
+def handle_message(input_field, messages_container):
     user_msg = input_field.get().strip()
-    if not user_msg:
+
+    # Clear placeholder or empty messages
+    if user_msg == "Type your message..." or not user_msg:
         return
-    append_message(chat_history,f"Bot: You {user_msg}!")
+
+    # Display user message
+    add_user_message(messages_container, user_msg)
+
+    # Clear the input field
+    input_field.delete(0, tk.END)
+
+    # Log user activity
     DataBase.log_activity(current_user, user_msg)
 
-    # Check complaince rules against search action
+    # Process the message and generate response
     if not ComplianceSecurity.is_authorized(current_user, "search"):
         bot_resp = "You do not have permission to perform this search."
     else:
         # Parse and query
         filters = NLP.parse_query(user_msg)
         results = DataBase.query_books(filters)
-        bot_resp = "Here are some results:"+" "+" ".join(
-            [f"- {r[0]} ({r[1]}, {r[2]})" for r in results[:5]]
-        ) if results else "Sorry, I couldn't find any matching items."
+        if results:
+            bot_resp = "Here are some results:\n" + "\n".join(
+                [f"- {r[0]} ({r[1]}, {r[2]})" for r in results[:5]])
+        else:
+            bot_resp = "No results found."
 
-        append_message(chat_history,f"Bot: {bot_resp}")
-        DataBase.log_activity(current_user, bot_resp)
+    # Add bot response delay in order to feel like natural dialogue
+    messages_container.after(500, lambda: add_user_message(messages_container, bot_resp))
+
+    # Log the bot response
+    DataBase.log_activity(current_user, bot_resp)
+
+if __name__ == "__main__":
+    # Initialize database before starting the application
+    DataBase.init_db()
+    run_chat()
+
+

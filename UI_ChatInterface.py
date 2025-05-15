@@ -131,6 +131,10 @@ def show_chat_interface():
     title_label = tk.Frame(header_frame, bg="#7349cc")
     title_label.pack(expand=True)
 
+    # Main Chat with light gray background
+    chat_frame = tk.Frame(chat_win, bg="#f0f0f5")
+    chat_frame.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
+
     # Chat history
     frame = tk.Frame(chat_win)
     frame.pack(expand=True, fill=tk.BOTH)

@@ -230,10 +230,15 @@ def handle_message(input_field, messages_container):
     input_field.delete(0, tk.END)
 
     # Log user activity
-    DataBase.log_activity(current_user, user_msg)
+    global current_user
+    if current_user:
+        DataBase.log_activity(current_user, user_msg)
+    else:
+        # Use a default user uf current_user is not set
+        DataBase.log_activity("guest", user_msg)
 
     # Process the message and generate response
-    if not ComplianceSecurity.is_authorized(current_user, "search"):
+    if current_user and not ComplianceSecurity.is_authorized(current_user, "search"):
         bot_resp = "You do not have permission to perform this search."
     else:
         # Parse and query

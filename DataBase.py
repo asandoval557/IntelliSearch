@@ -14,16 +14,31 @@ def init_db():
     # 1) Activity DB
     conn = sqlite3.connect(activity_db)
     cursor = conn.cursor()
-    cursor.execute(
-        '''
-        CREATE TABLE IF NOT EXISTS user_activity (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            message TEXT NOT NULL,
-            timestamp TEXT NOT NULL
-        );
-        '''
-    )
+
+    # Check if table exists
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='user_activity'")
+    table_exists = cursor.fetchone()
+
+    if not table_exists:
+        # Create table with correct columns
+        cursor.execute(
+            '''
+            CREATE TABLE user_activity (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL,
+                message TEXT NOT NULL,
+                timestamp TEXT NOT NULL
+            );
+            '''
+        )
+    else:
+        # Check if username column exists
+        try:
+            cursor.execute("SELECT username FROM user_activity LIMIT 1")
+        except sqlite3.OperationalError:
+            # Add username column if it doesn't exist
+            cursor.execute("ALTER TABLE user_activity ADD COLUMN username TEXT")
+
     conn.commit()
     conn.close()
 
@@ -64,10 +79,23 @@ def log_activity(username: str, message: str, timestamp: str = None):
     ts = timestamp or datetime.now().isoformat()
     conn = sqlite3.connect(activity_db)
     cursor = conn.cursor()
-    cursor.execute(
-        'INSERT INTO user_activity (username, message, timestamp) VALUES (?, ?, ?)',
-        (username, message, ts)
-    )
+
+    # Get column names to determine correct insert statement
+    cursor.execute("PRAGMA table_info(user_activity)")
+    columns = [column[1] for column in cursor.fetchall()]
+
+    if "username" in columns:
+        cursor.execute(
+            'INSERT INTO user_activity (username, message, timestamp) VALUES (?, ?, ?)',
+            (username, message, ts)
+        )
+    else:
+        # If no username column, use the schema that exists
+        cursor.execute(
+            'INSERT INTO user_activity (message, timestamp) VALUES (?, ?)',
+            (message, ts)
+        )
+
     conn.commit()
     conn.close()
 

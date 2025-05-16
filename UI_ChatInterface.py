@@ -166,7 +166,7 @@ def show_chat_interface():
     entry_frame = tk.Frame(input_frame, bg='white', bd=1, relief=tk.SOLID)
     entry_frame.pack(side=tk.LEFT,fill=tk.X, expand=True, padx=(0,10))
 
-    input_field = tk.ENTRY(entry_frame, bd=0, font=('Arial',10), bg='white')
+    input_field = tk.Entry(entry_frame, bd=0, font=('Arial',10), bg='white')
     input_field.pack(fill=tk.X, expand=True, ipady=8, padx=10)
     input_field.insert(0, "Type your message...")
 
@@ -203,7 +203,7 @@ def add_bot_message(container, message):
     msg_frame = tk.Frame(container, bg="#f0f0f5")
     msg_frame.pack(fill=tk.X, pady=10)
 
-    msg_bubble = tk.Label(msg_frame, text=message, wraplength=250, bg="#e6e6f0", fg='white', padx=12, pady=8,
+    msg_bubble = tk.Label(msg_frame, text=message, wraplength=250, bg="#273746", fg='white', padx=12, pady=8,
                           relief=tk.FLAT, anchor='w')
     msg_bubble.pack(side=tk.LEFT, padx=10)
 

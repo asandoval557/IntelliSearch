@@ -240,3 +240,44 @@ def populate_demo_books(count = 200, books=None):
         # Add books to list
         books.append((title, genre, publication_year))
 
+        # Insert books into database
+    cursor.executemany("INSERT INTO books (title, genre, publication_year) VALUES (?, ?, ?)", books)
+    conn.commit()
+    conn.close()
+
+    print(f"Successfully added {count} random books to the database!")
+    return True
+
+# Initializing the demo database
+def init_demo_db(force_populate=False):
+    """
+    Initialize the demo database with sample data if it's empty or if force_populate is True.
+
+    Args:
+        force_populate: If True, will repopulate the database even if it has data
+    """
+    conn = sqlite3.connect(demo_db)
+    cursor = conn.cursor()
+
+    # Create table if it doesn't exist
+    cursor.execute(
+        '''
+        CREATE TABLE IF NOT EXISTS books (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            genre TEXT NOT NULL,
+            publication_year INTEGER NOT NULL
+        );
+        '''
+    )
+
+    # Check if data exists
+    cursor.execute("SELECT COUNT(*) FROM books")
+    count = cursor.fetchone()[0]
+    conn.close()
+
+    # Populate if empty or forced
+    if count == 0 or force_populate:
+        return populate_demo_books(200)
+
+    return False

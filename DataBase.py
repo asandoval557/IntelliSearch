@@ -2,6 +2,7 @@ import sqlite3
 import hashlib
 import secrets
 from datetime import datetime
+import random
 
 # Database file paths
 activity_db = 'user_activity.db'
@@ -151,3 +152,91 @@ def query_books(filters: dict) -> list:
     results = cursor.fetchall()
     conn.close()
     return results
+
+def populate_demo_books(count = 200, books=None):
+    """ Populate the books database with random book entries.
+    Args:
+        count: Number of random books to generate.(default: 200)"""
+    conn = sqlite3.connect(demo_db)
+    cursor = conn.cursor()
+
+    # Clear existing data
+    cursor.execute("DELETE FROM books")
+
+    # Sample data for random generation
+    genres = ["Science Fiction", "Fantasy", "Mystery", "Thriller", "Romance",
+        "Historical Fiction", "Non-Fiction", "Biography", "Self-Help",
+        "Horror", "Adventure", "Children's", "Young Adult", "Poetry",
+        "Drama", "Classic", "Dystopian", "Memoir", "Philosophy", "Science"]
+
+    title_prefixes = ["The", "A", "Secret", "Hidden", "Lost", "Last", "First", "New",
+        "Ancient", "Final", "Eternal", "Forgotten", "Mysterious", "Dark",
+        "Light", "Shadow", "Silent", "Wild", "Crimson", "Golden", "Silver"]
+
+    title_subjects = ["Garden", "Mountain", "Sea", "River", "Forest", "City", "Star", "Moon",
+        "Sun", "Kingdom", "Empire", "Journey", "Adventure", "Quest", "Legacy",
+        "Mystery", "Secret", "Dream", "Nightmare", "Paradise", "World", "Universe",
+        "Chronicle", "Story", "Tale", "Legend", "Myth", "Prophecy", "War", "Battle",
+        "Hero", "Knight", "King", "Queen", "Prince", "Princess", "Wizard", "Witch",
+        "Dragon", "Ghost", "Soul", "Heart", "Mind", "Life", "Death", "Destiny"]
+
+    title_suffixes = ["of Time", "of Destiny", "of Fate", "of Shadows", "of Light", "of Dreams",
+        "of Fire", "of Ice", "of Water", "of Earth", "of Wind", "in Space",
+        "in the Dark", "in the Light", "in Winter", "in Summer", "at Dawn",
+        "at Dusk", "in Ruins", "of the Past", "of the Future", "Reborn",
+        "Awakened", "Unleashed", "Revealed", "Forgotten", "Remembered"]
+
+    authors_first_names = ["John", "Jane", "Michael", "Emily", "David", "Sarah", "Robert", "Jessica",
+        "William", "Elizabeth", "James", "Olivia", "Richard", "Sophia", "Thomas",
+        "Emma", "Charles", "Ava", "Daniel", "Mia", "Matthew", "Isabella", "Joseph",
+        "Amelia", "Christopher", "Abigail", "Andrew", "Charlotte", "Joshua", "Harper"]
+
+    authors_last_names = ["Smith", "Johnson", "Williams", "Jones", "Brown", "Davis", "Miller", "Wilson",
+        "Moore", "Taylor", "Anderson", "Thomas", "Jackson", "White", "Harris", "Martin",
+        "Thompson", "Garcia", "Martinez", "Robinson", "Clark", "Rodriguez", "Lewis",
+        "Lee", "Walker", "Hall", "Allen", "Young", "Hernandez", "King", "Wright"]
+
+    #Generate random books
+    book =[]
+    current_year = datetime.now().year
+
+    for _ in range(count):
+
+        if random.random() < 0.7: #70% chance of book having a prefix
+            title = f"{random.choice(title_prefixes)} {random.choice(title_subjects)}"
+        else:
+            title = random.choice(title_subjects)
+
+        if random.random() <0.4: #40% chance of the book having a prefix
+            title += f"{random.choice(title_suffixes)}"
+
+        # Add "by Author Name" to some titles to make them more realistic
+        if random.random() <0.1: #10% chance
+            author = f"{random.choice(authors_first_names)} {random.choice(authors_last_names)}"
+            title = f"{title} by {author}"
+
+        #generate a random genre
+        genre = random.choice(genres)
+
+        year_weighs = [
+            (1900,1950,0.1),
+            (1951,2000,0.3),
+            (2001,current_year, 0.6)
+        ]
+
+        #choose a weight range
+        weight_choice = random.random()
+        cumulative_weight = 0
+        selected_range = None
+
+        for year_start, year_end, weight in year_weighs:
+            cumulative_weight += weight
+            if weight_choice <= cumulative_weight:
+                selected_range = (year_start, year_end)
+                break
+
+        publication_year = random.randint(selected_range[0], selected_range[1])
+
+        # Add books to list
+        books.append((title, genre, publication_year))
+

@@ -1,4 +1,10 @@
 import spacy
+from spacy.matcher import Matcher, PhraseMatcher
+from spacy.tokens import Span
+import re
+from typing import Optional, List, Dict, Any, Tuple
+import logging
+
 
 nlp = None
 

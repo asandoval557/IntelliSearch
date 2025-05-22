@@ -154,7 +154,7 @@ def query_books(filters: dict) -> list:
     return results
 
 def populate_demo_books(count = 200, books=None):
-    books = books or []
+
     """ Populate the books database with random book entries.
     Args:
         count: Number of random books to generate.(default: 200)"""
@@ -198,7 +198,7 @@ def populate_demo_books(count = 200, books=None):
         "Lee", "Walker", "Hall", "Allen", "Young", "Hernandez", "King", "Wright"]
 
     #Generate random books
-    book =[]
+    books =[]
     current_year = datetime.now().year
 
     for _ in range(count):

@@ -4,9 +4,9 @@ import UI_ChatInterface
 import DataBase
 import NLP
 import ComplianceSecurity
-"""
+
 def initialize_application():
-    ""Initialize all components of the application.""
+    """Initialize all components of the application."""
     print("Initializing application...")
 
     # Initialize database tables
@@ -33,11 +33,11 @@ def main():
     UI_ChatInterface.run_chat()
 
 if __name__ == "__main__":
-    main() """
+    main()
 
-
+"""
 def test_nlp_module():
-    """Test the NLP module functionality"""
+    ""Test the NLP module functionality""
     print("=" * 50)
     print("TESTING NLP MODULE")
     print("=" * 50)
@@ -79,7 +79,7 @@ def test_nlp_module():
 
 
 def test_database_module():
-    """Test the database module functionality"""
+    ""Test the database module functionality""
     print("\n" + "=" * 50)
     print("TESTING DATABASE MODULE")
     print("=" * 50)
@@ -141,7 +141,7 @@ def test_database_module():
 
 
 def test_integration():
-    """Test the integration between NLP and Database"""
+    ""Test the integration between NLP and Database""
     print("\n" + "=" * 50)
     print("TESTING INTEGRATION")
     print("=" * 50)
@@ -181,7 +181,7 @@ def test_integration():
 
 
 def main():
-    """Run all tests"""
+    ""Run all tests""
     print("TROUBLESHOOTING NLP + DATABASE INTEGRATION")
     print("=" * 60)
 
@@ -205,3 +205,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+"""

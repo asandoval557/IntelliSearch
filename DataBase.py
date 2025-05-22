@@ -147,8 +147,26 @@ def query_books(filters: dict) -> list:
     # TODO: Build SQL from filters (genre, years, etc.) and return results
     conn = sqlite3.connect(demo_db)
     cursor = conn.cursor()
-    # simple fallback all rows
-    cursor.execute('SELECT title, genre, publication_year FROM books')
+
+    # For debugging, let's first check what genres are actually in the database
+    cursor.execute("SELECT DISTINCT genre FROM books")
+    available_genres = cursor.fetchall()
+    print("Available genres in database:", available_genres)
+
+    query = 'SELECT title, genre, publication_year FROM books WHERE 1=1'
+    params = []
+
+    if 'genre' in filters:
+        query += ' AND genre in ?'
+        params.append(filters['genre'])
+
+    if 'year_start' in filters and 'year_end' in filters:
+        query += ' AND publication_year BETWEEN ? and ?'
+        params.extend([filters['year_start'], filters['year_end']])
+
+    print("Executing query:", query, "with Params:", params)
+
+    cursor.execute(query, params)
     results = cursor.fetchall()
     conn.close()
     return results

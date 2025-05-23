@@ -196,9 +196,32 @@ def extract_filters_from_query(text: str) -> dict:
     parsed = parse_query(text)
     filters = {}
 
+    # Adding debug output
+    print("Parsed query result:", parsed)
+
     # Convert parsed data to database filter format
     if parsed.get('genre'):
-        filters['genre'] = parsed['genre'][0] if isinstance(parsed['genre'], list) else parsed['genre']
+        # Get the genres(s) from the parsed result
+        genre = parsed['genre']
+        print("Genre from parsed query:", genre) # Debug Output
+
+        # Normalize genre to match database format (capitalize first letter of each word)
+        if isinstance(genre, list):
+            # If we have a list of genres, normalize each one
+            normalized_genres = []
+            for g in genre:
+                # Title case for multi-word  genres like "Science Fiction"
+                if ' ' in g:
+                    normalized_genres.append(' '.join(word.capitalize() for word in g.split(' ')))
+                else:
+                    normalized_genres.append(g.capitalize())
+            filters['genre'] = normalized_genres
+        else:
+            # If we have a single genre string
+            if ' ' in genre:
+                filters['genre'] = ' '.join(word.capitalize() for word in genre.split())
+            else:
+                filters['genre'] = genre.capitalize()
 
     if parsed.get('year_range'):
         filters['year_start'] = parsed['year_range'][0]
@@ -211,6 +234,8 @@ def extract_filters_from_query(text: str) -> dict:
 
     if parsed.get('author'):
         filters['author'] = parsed['author']
+
+    print("Final filters:", filters) #Debug output
 
     return filters
 

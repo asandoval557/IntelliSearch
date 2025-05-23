@@ -156,9 +156,10 @@ def query_books(filters: dict) -> list:
     query = 'SELECT title, genre, publication_year FROM books WHERE 1=1'
     params = []
 
-    if 'genre' in filters:
-        query += ' AND genre in ?'
-        params.append(filters['genre'])
+    if 'genre' in filters and filters['genre']:
+        placeholders = ', '.join(['?' for _ in filters['genre']])
+        query += f' AND genre IN ({placeholders})'
+        params.extend(filters['genre'])
 
     if 'year_start' in filters and 'year_end' in filters:
         query += ' AND publication_year BETWEEN ? and ?'

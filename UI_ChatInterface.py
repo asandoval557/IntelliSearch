@@ -214,7 +214,7 @@ def add_user_message(container, message):
 
     msg_bubble = tk.Label(msg_frame, text= message, wraplength=250, justify=tk.RIGHT, bg='#7349cc',
                           fg='white', padx=12, pady=8, relief=tk.FLAT, anchor='e')
-
+    msg_bubble.pack(side=tk.RIGHT, padx=10)
 
 def handle_message(input_field, messages_container):
     user_msg = input_field.get().strip()
@@ -251,10 +251,19 @@ def handle_message(input_field, messages_container):
             bot_resp = "No results found."
 
     # Add bot response delay in order to feel like natural dialogue
-    messages_container.after(500, lambda: add_user_message(messages_container, bot_resp))
+    messages_container.after(500, lambda: add_bot_message(messages_container, bot_resp))
 
     # Log the bot response
     DataBase.log_activity(current_user, bot_resp)
+
+# Adding scrolling function
+def update_scroll_region(chat_canvas, message_frame):
+    """Update the scroll region to fit within a message"""
+    message_frame.update_idletasks()
+    chat_canvas.configure(scrollregion=chat_canvas.bbox("all"))
+    # Auto scroll to the bottom
+    chat_canvas.yview_moveto(1.0)
+
 
 if __name__ == "__main__":
     # Initialize database before starting the application

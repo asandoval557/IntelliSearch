@@ -7,16 +7,18 @@ import ComplianceSecurity
 
 
 # Global context
-currentUser = None
+current_user = None
 
 def run_chat():
     """Entry point, show login screen first, then chat interface on successful login."""
-    show_login()
-    tk.mainloop()
+    root = tk.Tk()
+    root.withdraw()
+    show_login(root)
+    root.mainloop()
 
-def show_login():
+def show_login(root):
     """Create and display the login screen."""
-    login_win = tk.Toplevel()
+    login_win = tk.Toplevel(root)
     login_win.title("Login")
     # initial window size
     login_win.geometry("300x200")
@@ -59,7 +61,7 @@ def show_login():
             global current_user
             current_user = user
             login_win.destroy()
-            show_chat_interface()
+            show_chat_interface(root)
         else:
             messagebox.showerror("Unauthorized", "Invalid credentials or insufficient permissions.")
 
@@ -68,7 +70,7 @@ def show_login():
 
     # Register button
     def show_register():
-        register_win = tk.Toplevel()
+        register_win = tk.Toplevel(root)
         register_win.title("Register New User")
         register_win.geometry("300x300")
         register_win.resizable(True, True)
@@ -112,9 +114,9 @@ def show_login():
     register_btn = tk.Button(btn_frame, text="Register", command=show_register, width=10)
     register_btn.pack(side=tk.LEFT, padx=5)
 
-def show_chat_interface():
+def show_chat_interface(root):
     """Build the main chat interface upon successful login."""
-    chat_win = tk.Tk()
+    chat_win = tk.Toplevel(root)
     chat_win.title(f"Chat - {current_user}")
     # Set initial window size
     chat_win.geometry("500x600")
@@ -157,6 +159,7 @@ def show_chat_interface():
         chat_canvas.itemconfig("messages_frame", width=chat_canvas.winfo_width())
 
     messages_frame.bind("<Configure>", configure_messages_frame)
+    chat_canvas.bind("<Configure>", configure_messages_frame)
 
     # Bottom user input area
     input_frame = tk.Frame(chat_win, bg='white', height=60)
@@ -190,10 +193,17 @@ def show_chat_interface():
     send_btn.pack(side=tk.RIGHT)
 
     # Bind Enter Key
-    input_field.bind("<Return>", lambda event: handle_message(input_field, messages_frame))
+    input_field.bind("<Return>", lambda event: handle_message(input_field, messages_frame, chat_canvas))
 
     # Display welcome message
-    add_bot_message(messages_frame, f"Hello! How can I help you?")
+    def show_welcome():
+        add_bot_message(messages_frame, f"Hello! {current_user} How can I help you?")
+        messages_frame.update()
+        chat_canvas.update()
+        chat_canvas.configure(scrollregion=chat_canvas.bbox("all"))
+    # Make the welcome message visible
+    chat_canvas.yview_moveto(0.0)
+    chat_win.after(100, show_welcome)
 
     #Focus on input field
     input_field.focus_set()
@@ -216,7 +226,7 @@ def add_user_message(container, message):
                           fg='white', padx=12, pady=8, relief=tk.FLAT, anchor='e')
     msg_bubble.pack(side=tk.RIGHT, padx=10)
 
-def handle_message(input_field, messages_container):
+def handle_message(input_field, messages_container, chat_canvas):
     user_msg = input_field.get().strip()
 
     # Clear placeholder or empty messages
@@ -225,12 +235,13 @@ def handle_message(input_field, messages_container):
 
     # Display user message
     add_user_message(messages_container, user_msg)
+    update_scroll_region(chat_canvas, messages_container)
 
     # Clear the input field
     input_field.delete(0, tk.END)
 
     # Log user activity
-    global current_user
+
     if current_user:
         DataBase.log_activity(current_user, user_msg)
     else:
@@ -250,11 +261,16 @@ def handle_message(input_field, messages_container):
         else:
             bot_resp = "No results found."
 
-    # Add bot response delay in order to feel like natural dialogue
-    messages_container.after(500, lambda: add_bot_message(messages_container, bot_resp))
+    # Add bot response with delay and update scroll
 
-    # Log the bot response
-    DataBase.log_activity(current_user, bot_resp)
+    def add_delayed_response():
+        add_bot_message(messages_container, bot_resp)
+        update_scroll_region(chat_canvas, messages_container)
+        # Log the bot response
+        if current_user:
+            DataBase.log_activity(current_user, bot_resp)
+
+    messages_container.after(500, add_delayed_response)
 
 # Adding scrolling function
 def update_scroll_region(chat_canvas, message_frame):

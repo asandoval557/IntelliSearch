@@ -83,14 +83,19 @@ def parse_query(text: str) -> dict:
     if decade_matches:
         print(f"Found {len(decade_matches)} decade matches") # debug output
         for match in decade_matches:
-            if match[0] and match[1]:
-                decade_start = int(match[0] + match[1])
-            elif match[2]:
-                decade_num = int(match[2])
+           groups = match.groups()
+           print(f"Decade match groups: {groups}") # debug output
+
+           if groups[0] and groups[1]:
+               decade_start = int(groups[0] + groups[1])
+           elif groups[2]:
+                decade_num = int(groups[2])
                 if decade_num >= 50:
-                    decade_start = 1900+ decade_num
+                    decade_start = 1900 + decade_num
                 else:
-                    decade_start = 2000+ decade_num
+                    decade_start = 2000 + decade_num
+           else:
+            continue
 
             result['year_range'] = (decade_start, decade_start + 9)
             print(f"Set year range for decade: {result['year_range']}") # debug output

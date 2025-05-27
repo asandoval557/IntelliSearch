@@ -115,7 +115,37 @@ def parse_query(text: str) -> dict:
             print(f"Set year range for year: {result['years_range']}")  # debug output
 
     # Pattern for "last x years"
+    if not result.get('year_range'):
+        last_years_pattern = r'(?:last|past)\s+(\d+)\s+years?'
+        last_match = re.search(last_years_pattern, text.lower())
+        if last_match:
+            years_back = int(last_match.group(1))
+            result['year_range'] = (current_year - years_back, current_year)
+            result['ago'] = True
+            print(f"Set year range for 'last X years': {result['year_range']}")  # Debug
 
+        # Pattern for specific years
+    if not result.get('year_range'):
+        year_pattern = r'\b(19\d{2}|20\d{2})\b'
+        years = re.findall(year_pattern, text)
+        if years:
+            years = [int(y) for y in years]
+            if len(years) == 1:
+                result['year_range'] = (years[0], years[0])
+            else:
+                result['year_range'] = (min(years), max(years))
+            print(f"Set year range for specific years: {result['year_range']}")  # Debug
+
+        # Extract named entities
+    for ent in doc.ents:
+        result['entities'].append({
+            'text': ent.text,
+            'label': ent.label_,
+            'start': ent.start_char,
+            'end': ent.end_char
+        })
+
+    return result
 
 
 
@@ -133,42 +163,72 @@ def extract_filters_from_query(text: str) -> dict:
     # Convert parsed data to database filter format
     if parsed.get('genre'):
         # Get the genres(s) from the parsed result
-        genre = parsed['genre']
-        print("Genre from parsed query:", genre) # Debug Output
+        genres = parsed['genre']
+        print("Genre from parsed query:", genres) # Debug Output
 
-        # Normalize genre to match database format (capitalize first letter of each word)
-        if isinstance(genre, list):
-            # If we have a list of genres, normalize each one
-            normalized_genres = []
-            for g in genre:
-                # Title case for multi-word  genres like "Science Fiction"
-                if ' ' in g:
-                    normalized_genres.append(' '.join(word.capitalize() for word in g.split(' ')))
-                else:
-                    normalized_genres.append(g.capitalize())
-            filters['genre'] = normalized_genres
+        # Normalize genres to match database format exactly
+        normalized_genres = []
+
+        if isinstance(genres, list):
+            for genre in genres:
+                normalized = normalize_genre(genre)
+                if normalized:
+                    normalized_genres.append(normalized)
         else:
-            # If we have a single genre string
-            if ' ' in genre:
-                filters['genre'] = ' '.join(word.capitalize() for word in genre.split())
-            else:
-                filters['genre'] = genre.capitalize()
+            normalized = normalize_genre(genres)
+            if normalized:
+                normalized_genres.append(normalized)
 
+        if normalized_genres:
+            filters['genre'] = normalized_genres
+            print("Normalized genres for database:", normalized_genres)  # Debug
+
+        # Handle year ranges
     if parsed.get('year_range'):
         filters['year_start'] = parsed['year_range'][0]
         filters['year_end'] = parsed['year_range'][1]
+        print(f"Year range filter: {filters['year_start']}-{filters['year_end']}")  # Debug
 
-    # Add other filters as needed
-    for attr in ['bestseller', 'award_winning', 'new_release', 'classic']:
-        if parsed.get(attr):
-            filters[attr] = True
-
-    if parsed.get('author'):
-        filters['author'] = parsed['author']
-
-    print("Final filters:", filters) #Debug output
-
+    print("Final filters for database:", filters)  # Debug
     return filters
+
+
+def normalize_genre(genre_text: str) -> str:
+    """
+    Normalize genre text to match database format exactly.
+    Based on your database genres: Science Fiction, Fantasy, Mystery, etc.
+    """
+    # Convert to lowercase for matching
+    genre_lower = genre_text.lower().strip()
+
+    # Map variations to exact database format
+    genre_mapping = {
+        'science fiction': 'Science Fiction',
+        'sci-fi': 'Science Fiction',
+        'sci fi': 'Science Fiction',
+        'fantasy': 'Fantasy',
+        'mystery': 'Mystery',
+        'thriller': 'Thriller',
+        'romance': 'Romance',
+        'historical fiction': 'Historical Fiction',
+        'non-fiction': 'Non-Fiction',
+        'biography': 'Biography',
+        'self-help': 'Self-Help',
+        'horror': 'Horror',
+        'adventure': 'Adventure',
+        'children\'s': 'Children\'s',
+        'childrens': 'Children\'s',
+        'young adult': 'Young Adult',
+        'poetry': 'Poetry',
+        'drama': 'Drama',
+        'classic': 'Classic',
+        'dystopian': 'Dystopian',
+        'memoir': 'Memoir',
+        'philosophy': 'Philosophy',
+        'science': 'Science'
+    }
+
+    return genre_mapping.get(genre_lower, None)
 
 # Adding function for test script
 def process_natural_language_query(text: str) -> dict:

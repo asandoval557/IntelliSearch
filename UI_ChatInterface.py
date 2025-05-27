@@ -242,7 +242,7 @@ def handle_message(input_field, messages_container):
         bot_resp = "You do not have permission to perform this search."
     else:
         # Parse and query
-        filters = NLP.parse_query(user_msg)
+        filters = NLP.extract_filters_from_query(user_msg)
         results = DataBase.query_books(filters)
         if results:
             bot_resp = "Here are some results:\n" + "\n".join(

@@ -78,7 +78,7 @@ def parse_query(text: str) -> dict:
 
     # Pattern for decades
     decade_pattern = r'\b(?:(19|20)(\d0)s|(\d0)s)\b'
-    decade_matches = re.finditer(decade_pattern, text.lower())
+    decade_matches = list(re.finditer(decade_pattern, text.lower()))
 
     if decade_matches:
         print(f"Found {len(decade_matches)} decade matches") # debug output
@@ -92,27 +92,27 @@ def parse_query(text: str) -> dict:
                 else:
                     decade_start = 2000+ decade_num
 
-            result['years_range'] = (decade_start, decade_start + 9)
-            print(f"Set year range for decade: {result['years_range']}") # debug output
+            result['year_range'] = (decade_start, decade_start + 9)
+            print(f"Set year range for decade: {result['year_range']}") # debug output
             break
 
     # Pattern for "after year"
-    if not result.get('years_range'):
+    if not result.get('year_range'):
         after_pattern = r'(?:after|since|from)\s+(19\d{2}|20\d{2})'
         after_match = re.search(after_pattern, text.lower())
         if after_match:
             year = int(after_match.group(1))
-            result['years_range'] = (year, current_year)
-            print(f"Set year range for year: {result['years_range']}")  # debug output
+            result['year_range'] = (year, current_year)
+            print(f"Set year range for year: {result['year_range']}")  # debug output
 
     # Pattern for "before year"
-    if not result.get('years_range'):
+    if not result.get('year_range'):
         before_pattern = r'(?:before|until)\s+(19\d{2}|20\d{2})'
         before_match = re.search(before_pattern, text.lower())
         if before_match:
             year = int(before_match.group(1))
-            result['years_range'] = (1900, current_year)
-            print(f"Set year range for year: {result['years_range']}")  # debug output
+            result['year_range'] = (1900, current_year)
+            print(f"Set year range for year: {result['year_range']}")  # debug output
 
     # Pattern for "last x years"
     if not result.get('year_range'):

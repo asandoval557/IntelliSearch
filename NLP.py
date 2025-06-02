@@ -42,7 +42,8 @@ def parse_query(text: str) -> dict:
         'years_range': None,
         'ago': False,
         'entities': [],
-        'raw': text
+        'raw': text,
+        'has_searchable_content': False
     }
 
     doc = nlp(text.lower())
@@ -71,6 +72,7 @@ def parse_query(text: str) -> dict:
 
     if found_genres:
         result['genre'] = found_genres
+        result['has_searchable_content'] = True
         print(f"Found genre: {found_genres}") #debug output
 
     # Extract year preferences, updating pattern
@@ -82,6 +84,7 @@ def parse_query(text: str) -> dict:
 
     if decade_matches:
         print(f"Found {len(decade_matches)} decade matches") # debug output
+        result['has_searchable_content'] = True
         for match in decade_matches:
            groups = match.groups()
            print(f"Decade match groups: {groups}") # debug output
@@ -108,6 +111,7 @@ def parse_query(text: str) -> dict:
         if after_match:
             year = int(after_match.group(1))
             result['year_range'] = (year, current_year)
+            result['has_searchable_content'] = True
             print(f"Set year range for year: {result['year_range']}")  # debug output
 
     # Pattern for "before year"
@@ -117,6 +121,7 @@ def parse_query(text: str) -> dict:
         if before_match:
             year = int(before_match.group(1))
             result['year_range'] = (1900, current_year)
+            result['has_searchable_content'] = True
             print(f"Set year range for year: {result['year_range']}")  # debug output
 
     # Pattern for "last x years"
@@ -127,6 +132,7 @@ def parse_query(text: str) -> dict:
             years_back = int(last_match.group(1))
             result['year_range'] = (current_year - years_back, current_year)
             result['ago'] = True
+            result['has_searchable_content'] = True
             print(f"Set year range for 'last X years': {result['year_range']}")  # Debug
 
         # Pattern for specific years
@@ -139,6 +145,7 @@ def parse_query(text: str) -> dict:
                 result['year_range'] = (years[0], years[0])
             else:
                 result['year_range'] = (min(years), max(years))
+            result['has_searchable_content'] = True
             print(f"Set year range for specific years: {result['year_range']}")  # Debug
 
         # Extract named entities
@@ -194,6 +201,12 @@ def extract_filters_from_query(text: str) -> dict:
         filters['year_end'] = parsed['year_range'][1]
         print(f"Year range filter: {filters['year_start']}-{filters['year_end']}")  # Debug
 
+        # Check if we found any searchable content
+    if not parsed.get('has_searchable_content'):
+        # No recognizable search terms found
+        print("No searchable content found in query")
+        return {'no_results': True}
+
     print("Final filters for database:", filters)  # Debug
     return filters
 
@@ -219,6 +232,7 @@ def normalize_genre(genre_text: str) -> str:
         'non-fiction': 'Non-Fiction',
         'biography': 'Biography',
         'self-help': 'Self-Help',
+        'self help': 'Self-Help',
         'horror': 'Horror',
         'adventure': 'Adventure',
         'children\'s': 'Children\'s',

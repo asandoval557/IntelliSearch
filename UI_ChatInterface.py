@@ -197,7 +197,7 @@ def show_chat_interface(root):
 
     # Display welcome message
     def show_welcome():
-        add_bot_message(messages_frame, f"Hello! {current_user} How can I help you?")
+        add_bot_message(messages_frame, f"Hello! {current_user} how can I help you?")
         messages_frame.update()
         chat_canvas.update()
         chat_canvas.configure(scrollregion=chat_canvas.bbox("all"))
@@ -254,12 +254,17 @@ def handle_message(input_field, messages_container, chat_canvas):
     else:
         # Parse and query
         filters = NLP.extract_filters_from_query(user_msg)
-        results = DataBase.query_books(filters)
-        if results:
-            bot_resp = "Here are some results:\n" + "\n".join(
-                [f"- {r[0]} ({r[1]}, {r[2]})" for r in results[:5]])
+
+        # Check if NLP found no searchable content
+        if filters.get('no_results'):
+            bot_resp = "I couldn't understand what you're looking for. Please try searching by genre (like 'fantasy' or 'mystery') or publication year (like '1990s' or 'after 2010')."
         else:
-            bot_resp = "No results found."
+            results = DataBase.query_books(filters)
+            if results:
+                bot_resp = "Here are some results:\n" + "\n".join(
+                    [f"- {r[0]} ({r[1]}, {r[2]})" for r in results[:5]])
+            else:
+                bot_resp = "No results found matching your criteria."
 
     # Add bot response with delay and update scroll
 
